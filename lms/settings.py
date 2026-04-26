@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'django_filters',
     'users',
     'lessons',
-    # 'api',
+    'api',
 ]
 
 MIDDLEWARE = [
