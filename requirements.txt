@@ -33,4 +33,3 @@ urllib3==2.6.3
 yarl==1.23.0
 pytest==8.3.5
 pytest-django==4.10.0
-
