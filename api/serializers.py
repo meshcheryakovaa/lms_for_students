@@ -21,6 +21,13 @@ class UserCreateSerializer(DjoserUserCreateSerializer):
         model = User
         fields = ('id', 'email', 'username', 'first_name', 'last_name', 'password', 'role')
 
+    def create(self, validated_data):
+        role = validated_data.pop('role', User.STUDENT)
+        user = super().create(validated_data)
+        user.role = role
+        user.save(update_fields=['role'])
+        return user
+
 
 # ── Записи занятий ────────────────────────────────────────────────────────────
 
