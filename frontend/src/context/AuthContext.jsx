@@ -11,14 +11,11 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!localStorage.getItem('token')) { setLoading(false); return; }
-    if (!user) {
-      getMe()
-        .then((r) => { setUser(r.data); localStorage.setItem('user', JSON.stringify(r.data)); })
-        .catch(() => { localStorage.removeItem('token'); localStorage.removeItem('user'); })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    // Всегда запрашиваем актуальные данные пользователя с сервера
+    getMe()
+      .then((r) => { setUser(r.data); localStorage.setItem('user', JSON.stringify(r.data)); })
+      .catch(() => { localStorage.removeItem('token'); localStorage.removeItem('user'); setUser(null); })
+      .finally(() => setLoading(false));
   }, []);
 
   const signIn = (token, userData) => {
