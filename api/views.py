@@ -2,7 +2,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from lessons.models import LessonEntry
@@ -26,7 +26,8 @@ class GroupViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsTeacher()]
-        return [IsAuthenticated()]
+        # list и retrieve — доступны без авторизации (нужно для формы регистрации)
+        return [AllowAny()]
 
 
 class LessonEntryViewSet(viewsets.ModelViewSet):
