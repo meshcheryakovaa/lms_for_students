@@ -98,14 +98,22 @@ export default function StudentJournalPage() {
   const [editing, setEditing] = useState(null);   // id редактируемой записи
   const [search, setSearch] = useState('');
   const [resetKey, setResetKey] = useState(0);    // для сброса формы после создания
+  const [loadError, setLoadError] = useState('');
 
   const load = async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const params = {};
       if (search) params.search = search;
       const { data } = await getEntries(params);
       setEntries(data.results ?? data);
+    } catch (err) {
+      console.error('Ошибка загрузки записей:', err);
+      setLoadError(
+        err.response?.data?.detail
+        || `Ошибка ${err.response?.status ?? 'сети'}: не удалось загрузить записи`
+      );
     } finally {
       setLoading(false);
     }
@@ -162,6 +170,10 @@ export default function StudentJournalPage() {
 
       {loading ? (
         <div className="spinner">Загрузка...</div>
+      ) : loadError ? (
+        <div className="error" style={{ padding: '1rem', background: '#fff5f5', borderRadius: 8 }}>
+          ⚠️ {loadError}
+        </div>
       ) : entries.length === 0 ? (
         <div className="empty">
           Записей пока нет — заполни форму выше и добавь первую!
