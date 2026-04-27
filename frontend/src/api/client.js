@@ -59,3 +59,6 @@ export const deleteEntry = (id) =>
 
 export const gradeEntry = (id, grade) =>
   client.patch(`/entries/${id}/grade/`, { grade });
+
+export const getGroups = () =>
+  client.get('/groups/');

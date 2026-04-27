@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { register, login, getMe } from '../api/client';
+import { register, login, getMe, getGroups } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 export default function RegisterPage() {
@@ -8,10 +8,18 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     email: '', username: '', first_name: '',
-    last_name: '', password: '', role: 'student',
+    last_name: '', password: '', role: 'student', group: '',
   });
+  const [groups, setGroups] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Загружаем список групп при монтировании
+  useEffect(() => {
+    getGroups()
+      .then((r) => setGroups(r.data))
+      .catch(() => {}); // если нет токена — список будет пустым, не критично
+  }, []);
 
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -21,7 +29,13 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
     try {
-      await register(form);
+      const payload = { ...form };
+      // Преобразуем group: пустая строка → null, число → число
+      payload.group = form.group ? parseInt(form.group, 10) : null;
+      // Преподавателю группа не нужна
+      if (form.role === 'teacher') payload.group = null;
+
+      await register(payload);
       // Сразу логинимся после регистрации
       const { data } = await login(form.email, form.password);
       const token = data.auth_token;
@@ -72,6 +86,20 @@ export default function RegisterPage() {
               <option value="teacher">Преподаватель</option>
             </select>
           </label>
+
+          {form.role === 'student' && (
+            <label>Группа
+              <select name="group" value={form.group} onChange={handleChange}>
+                <option value="">— не выбрана —</option>
+                {groups
+                  .filter((g) => !g.is_archived)
+                  .map((g) => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+              </select>
+            </label>
+          )}
+
           {error && <p className="error">{error}</p>}
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Регистрация...' : 'Создать аккаунт'}

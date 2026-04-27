@@ -6,11 +6,27 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from lessons.models import LessonEntry
-from users.models import User
+from users.models import Group, User
 
 from .filters import LessonEntryFilter
 from .permissions import IsOwnerOrTeacher, IsStudent, IsTeacher
-from .serializers import GradeSerializer, LessonEntrySerializer
+from .serializers import GradeSerializer, GroupSerializer, LessonEntrySerializer
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    """
+    GET  /api/groups/        — список групп (все авторизованные)
+    POST /api/groups/        — создать группу (только преподаватель)
+    PATCH/DELETE /api/groups/{id}/ — только преподаватель
+    """
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsTeacher()]
+        return [IsAuthenticated()]
 
 
 class LessonEntryViewSet(viewsets.ModelViewSet):
@@ -25,7 +41,7 @@ class LessonEntryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = LessonEntry.objects.select_related('student', 'graded_by')
+        qs = LessonEntry.objects.select_related('student', 'student__group', 'graded_by')
         if user.role == User.TEACHER:
             return qs.all()
         return qs.filter(student=user)

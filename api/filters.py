@@ -12,7 +12,12 @@ class LessonEntryFilter(django_filters.FilterSet):
         exclude=True,
         label='Оценка выставлена',
     )
+    # ?group=1 → записи студентов из группы с id=1
+    group = django_filters.NumberFilter(
+        field_name='student__group',
+        label='Группа',
+    )
 
     class Meta:
         model = LessonEntry
-        fields = ['date', 'student']
+        fields = ['date', 'student', 'group']

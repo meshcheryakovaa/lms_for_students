@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { getEntries, gradeEntry } from '../api/client';
+import { getEntries, gradeEntry, getGroups } from '../api/client';
 
+/* ── Бейдж оценки ─────────────────────────────────────────── */
 function GradeBadge({ grade }) {
   if (grade == null) return <span className="badge badge-none">Нет оценки</span>;
   const cls = grade >= 7 ? 'good' : grade >= 5 ? 'mid' : 'bad';
   return <span className={`badge badge-${cls}`}>{grade}/10</span>;
 }
 
+/* ── Модалка выставления оценки ───────────────────────────── */
 function GradeModal({ entry, onClose, onGraded }) {
   const [value, setValue] = useState(entry.grade ?? '');
   const [saving, setSaving] = useState(false);
@@ -55,11 +57,96 @@ function GradeModal({ entry, onClose, onGraded }) {
   );
 }
 
+/* ── Сводная таблица: студент × дата ─────────────────────── */
+function GroupJournal({ entries, onGradeClick }) {
+  // Собираем уникальных студентов и даты
+  const studentsMap = {};
+  const datesSet = new Set();
+
+  entries.forEach((e) => {
+    const sid = e.student?.id;
+    if (sid && !studentsMap[sid]) {
+      studentsMap[sid] = e.student;
+    }
+    datesSet.add(e.date);
+  });
+
+  const students = Object.values(studentsMap).sort((a, b) =>
+    `${a.last_name} ${a.first_name}`.localeCompare(`${b.last_name} ${b.first_name}`)
+  );
+  const dates = [...datesSet].sort();
+
+  // Индекс: studentId → date → entry
+  const index = {};
+  entries.forEach((e) => {
+    const sid = e.student?.id;
+    if (!sid) return;
+    if (!index[sid]) index[sid] = {};
+    index[sid][e.date] = e;
+  });
+
+  if (students.length === 0) {
+    return <div className="empty">Нет записей для выбранной группы</div>;
+  }
+
+  return (
+    <div className="teacher-table-wrap">
+      <table className="teacher-table journal-grid">
+        <thead>
+          <tr>
+            <th className="student-col">Студент</th>
+            {dates.map((d) => (
+              <th key={d} className="date-col">{d}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {students.map((student) => (
+            <tr key={student.id}>
+              <td className="student-col">
+                <div className="student-name">{student.last_name} {student.first_name}</div>
+                {student.group && (
+                  <div className="student-email">{student.group.name}</div>
+                )}
+              </td>
+              {dates.map((date) => {
+                const entry = index[student.id]?.[date];
+                if (!entry) {
+                  return <td key={date} className="grade-cell grade-empty">—</td>;
+                }
+                const cls = entry.grade == null
+                  ? 'grade-pending'
+                  : entry.grade >= 7 ? 'grade-good'
+                  : entry.grade >= 5 ? 'grade-mid'
+                  : 'grade-bad';
+                return (
+                  <td
+                    key={date}
+                    className={`grade-cell ${cls}`}
+                    title={entry.comment}
+                    onClick={() => onGradeClick(entry)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {entry.grade ?? '?'}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ── Главная страница ─────────────────────────────────────── */
 export default function TeacherPanelPage() {
   const [entries, setEntries] = useState([]);
+  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [grading, setGrading] = useState(null);
-  const [filters, setFilters] = useState({ search: '', graded: '', ordering: '-date' });
+  const [mode, setMode] = useState('table');   // 'table' | 'journal'
+  const [filters, setFilters] = useState({ search: '', graded: '', ordering: '-date', group: '' });
 
   const load = async () => {
     setLoading(true);
@@ -67,6 +154,7 @@ export default function TeacherPanelPage() {
       const params = { ordering: filters.ordering };
       if (filters.search) params.search = filters.search;
       if (filters.graded !== '') params.graded = filters.graded;
+      if (filters.group !== '') params.group = filters.group;
       const { data } = await getEntries(params);
       setEntries(data.results ?? data);
     } finally {
@@ -75,6 +163,10 @@ export default function TeacherPanelPage() {
   };
 
   useEffect(() => { load(); }, [filters]);
+
+  useEffect(() => {
+    getGroups().then((r) => setGroups(r.data)).catch(() => {});
+  }, []);
 
   const handleFilter = (e) =>
     setFilters((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -104,28 +196,61 @@ export default function TeacherPanelPage() {
         </div>
       </div>
 
+      {/* ── Переключатель режимов ── */}
+      <div className="mode-switcher">
+        <button
+          className={`btn ${mode === 'table' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => setMode('table')}
+        >
+          📋 Таблица записей
+        </button>
+        <button
+          className={`btn ${mode === 'journal' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => setMode('journal')}
+        >
+          📊 Журнал группы
+        </button>
+      </div>
+
+      {/* ── Фильтры ── */}
       <div className="filters-bar">
-        <input
-          placeholder="Поиск по комментарию..."
-          name="search"
-          value={filters.search}
-          onChange={handleFilter}
-        />
-        <select name="graded" value={filters.graded} onChange={handleFilter}>
-          <option value="">Все записи</option>
-          <option value="false">Без оценки</option>
-          <option value="true">С оценкой</option>
-        </select>
-        <select name="ordering" value={filters.ordering} onChange={handleFilter}>
-          <option value="-date">По дате ↓</option>
-          <option value="date">По дате ↑</option>
-          <option value="-grade">По оценке ↓</option>
-          <option value="grade">По оценке ↑</option>
-        </select>
+        {mode === 'table' && (
+          <input
+            placeholder="Поиск по комментарию..."
+            name="search"
+            value={filters.search}
+            onChange={handleFilter}
+          />
+        )}
+        {groups.length > 0 && (
+          <select name="group" value={filters.group} onChange={handleFilter}>
+            <option value="">Все группы</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>{g.name}</option>
+            ))}
+          </select>
+        )}
+        {mode === 'table' && (
+          <>
+            <select name="graded" value={filters.graded} onChange={handleFilter}>
+              <option value="">Все записи</option>
+              <option value="false">Без оценки</option>
+              <option value="true">С оценкой</option>
+            </select>
+            <select name="ordering" value={filters.ordering} onChange={handleFilter}>
+              <option value="-date">По дате ↓</option>
+              <option value="date">По дате ↑</option>
+              <option value="-grade">По оценке ↓</option>
+              <option value="grade">По оценке ↑</option>
+            </select>
+          </>
+        )}
       </div>
 
       {loading ? (
         <div className="spinner">Загрузка...</div>
+      ) : mode === 'journal' ? (
+        <GroupJournal entries={entries} onGradeClick={setGrading} />
       ) : entries.length === 0 ? (
         <div className="empty">Записей нет</div>
       ) : (
@@ -149,6 +274,9 @@ export default function TeacherPanelPage() {
                       {entry.student?.first_name} {entry.student?.last_name}
                     </div>
                     <div className="student-email">{entry.student?.email}</div>
+                    {entry.student?.group && (
+                      <div className="student-email">{entry.student.group.name}</div>
+                    )}
                   </td>
                   <td>{entry.date}</td>
                   <td className="comment-cell">{entry.comment}</td>

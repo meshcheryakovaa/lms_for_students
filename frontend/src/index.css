@@ -226,6 +226,28 @@ textarea { resize: vertical; }
 .field-hint { font-weight: 400; color: var(--muted); font-size: .82rem; margin-left: 4px; }
 .file-chosen { font-size: .82rem; color: var(--primary); margin-top: .25rem; display: block; }
 
+/* ── Mode switcher ────────────────────────────────────── */
+.mode-switcher {
+  display: flex; gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap;
+}
+
+/* ── Group journal grid ───────────────────────────────── */
+.journal-grid { min-width: 600px; }
+.journal-grid .student-col { min-width: 160px; text-align: left; }
+.journal-grid .date-col {
+  min-width: 90px; text-align: center; font-size: .82rem; white-space: nowrap;
+}
+.grade-cell {
+  text-align: center; font-weight: 600; font-size: .95rem;
+  padding: .45rem .5rem; border-radius: 6px; transition: opacity .15s;
+}
+.grade-cell:hover { opacity: .75; }
+.grade-empty  { color: var(--muted); }
+.grade-pending { color: #b7791f; background: #fefcbf; }
+.grade-good   { color: #276749; background: #c6f6d5; }
+.grade-mid    { color: #744210; background: #feebc8; }
+.grade-bad    { color: #742a2a; background: #fed7d7; }
+
 /* ── Misc ─────────────────────────────────────────────── */
 .error { color: var(--danger); font-size: .85rem; }
 .spinner { text-align: center; padding: 3rem; color: var(--muted); }

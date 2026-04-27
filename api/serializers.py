@@ -5,27 +5,39 @@ from rest_framework import serializers
 
 from lessons.models import LessonEntry
 from lessons.yadisk import upload_to_yadisk
-from users.models import User
+from users.models import Group, User
+
+
+# ── Группы ───────────────────────────────────────────────────────────────────
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'year', 'is_archived']
 
 
 # ── Пользователи ─────────────────────────────────────────────────────────────
 
 class UserReadSerializer(DjoserUserSerializer):
+    group = GroupSerializer(read_only=True)
+
     class Meta(DjoserUserSerializer.Meta):
         model = User
-        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'role')
+        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'role', 'group')
 
 
 class UserCreateSerializer(DjoserUserCreateSerializer):
     class Meta(DjoserUserCreateSerializer.Meta):
         model = User
-        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'password', 'role')
+        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'password', 'role', 'group')
 
     def create(self, validated_data):
         role = validated_data.pop('role', User.STUDENT)
+        group = validated_data.pop('group', None)
         user = super().create(validated_data)
         user.role = role
-        user.save(update_fields=['role'])
+        user.group = group
+        user.save(update_fields=['role', 'group'])
         return user
 
 
