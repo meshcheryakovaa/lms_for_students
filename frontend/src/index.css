@@ -231,6 +231,18 @@ textarea { resize: vertical; }
   display: flex; gap: .75rem; margin-bottom: 1rem; flex-wrap: wrap;
 }
 
+/* ── Journal group selector ───────────────────────────── */
+.journal-group-selector {
+  margin-bottom: 1.25rem;
+}
+.journal-group-label {
+  display: block; font-size: .85rem; color: var(--muted);
+  margin-bottom: .6rem; font-weight: 500;
+}
+.journal-group-buttons {
+  display: flex; flex-wrap: wrap; gap: .5rem;
+}
+
 /* ── Group journal grid ───────────────────────────────── */
 .journal-grid { min-width: 600px; }
 .journal-grid .student-col { min-width: 160px; text-align: left; }

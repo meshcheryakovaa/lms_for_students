@@ -212,40 +212,60 @@ export default function TeacherPanelPage() {
         </button>
       </div>
 
-      {/* ── Фильтры ── */}
-      <div className="filters-bar">
-        {mode === 'table' && (
+      {/* ── Фильтры для таблицы ── */}
+      {mode === 'table' && (
+        <div className="filters-bar">
           <input
             placeholder="Поиск по комментарию..."
             name="search"
             value={filters.search}
             onChange={handleFilter}
           />
-        )}
-        {groups.length > 0 && (
-          <select name="group" value={filters.group} onChange={handleFilter}>
-            <option value="">Все группы</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>{g.name}</option>
-            ))}
+          {groups.length > 0 && (
+            <select name="group" value={filters.group} onChange={handleFilter}>
+              <option value="">Все группы</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </select>
+          )}
+          <select name="graded" value={filters.graded} onChange={handleFilter}>
+            <option value="">Все записи</option>
+            <option value="false">Без оценки</option>
+            <option value="true">С оценкой</option>
           </select>
-        )}
-        {mode === 'table' && (
-          <>
-            <select name="graded" value={filters.graded} onChange={handleFilter}>
-              <option value="">Все записи</option>
-              <option value="false">Без оценки</option>
-              <option value="true">С оценкой</option>
-            </select>
-            <select name="ordering" value={filters.ordering} onChange={handleFilter}>
-              <option value="-date">По дате ↓</option>
-              <option value="date">По дате ↑</option>
-              <option value="-grade">По оценке ↓</option>
-              <option value="grade">По оценке ↑</option>
-            </select>
-          </>
-        )}
-      </div>
+          <select name="ordering" value={filters.ordering} onChange={handleFilter}>
+            <option value="-date">По дате ↓</option>
+            <option value="date">По дате ↑</option>
+            <option value="-grade">По оценке ↓</option>
+            <option value="grade">По оценке ↑</option>
+          </select>
+        </div>
+      )}
+
+      {/* ── Выбор группы для журнала ── */}
+      {mode === 'journal' && (
+        <div className="journal-group-selector">
+          <label className="journal-group-label">Выберите группу:</label>
+          <div className="journal-group-buttons">
+            <button
+              className={`btn ${filters.group === '' ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setFilters((f) => ({ ...f, group: '' }))}
+            >
+              Все
+            </button>
+            {groups.map((g) => (
+              <button
+                key={g.id}
+                className={`btn ${filters.group === String(g.id) ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setFilters((f) => ({ ...f, group: String(g.id) }))}
+              >
+                {g.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="spinner">Загрузка...</div>
