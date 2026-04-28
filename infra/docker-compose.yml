@@ -4,22 +4,30 @@ services:
     image: postgres:15-alpine
     env_file: ../.env
     volumes:
-      - postgres_data:/var/lib/postgresql/data   # ← исправлено: volume подключён
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
 
   backend:
-    build: ../
+    image: meshcheryakovaa/lms:latest
     env_file: ../.env
     depends_on: [db]
     volumes:
       - static_volume:/app/staticfiles
+    restart: always
 
   nginx:
     image: nginx:alpine
-    ports: ['80:80']
+    ports:
+      - '80:80'
+      - '443:443'
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - static_volume:/app/staticfiles
+      - ../frontend/dist:/usr/share/nginx/html
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot
     depends_on: [backend]
+    restart: always
 
 volumes:
   postgres_data:
