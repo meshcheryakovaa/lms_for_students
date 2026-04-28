@@ -87,8 +87,8 @@ function EntryForm({ initial = EMPTY_FORM, onSave, onCancel, submitLabel = 'Со
 /* ── Бейдж оценки ─────────────────────────────────────────── */
 function GradeBadge({ grade }) {
   if (grade == null) return <span className="badge badge-none">Ожидает оценки</span>;
-  const cls = grade >= 7 ? 'good' : grade >= 5 ? 'mid' : 'bad';
-  return <span className={`badge badge-${cls}`}>{grade} / 10</span>;
+  const cls = grade >= 4 ? 'good' : grade >= 3 ? 'mid' : 'bad';
+  return <span className={`badge badge-${cls}`}>{grade} / 5</span>;
 }
 
 /* ── Главная страница журнала ─────────────────────────────── */
@@ -207,14 +207,18 @@ export default function StudentJournalPage() {
                   {entry.graded_by && (
                     <p className="graded-by">Оценил: {entry.graded_by}</p>
                   )}
-                  <div className="entry-actions">
-                    <button className="btn btn-sm" onClick={() => setEditing(entry.id)}>
-                      ✏️ Редактировать
-                    </button>
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDelete(entry.id)}>
-                      🗑 Удалить
-                    </button>
-                  </div>
+                  {entry.grade == null ? (
+                    <div className="entry-actions">
+                      <button className="btn btn-sm" onClick={() => setEditing(entry.id)}>
+                        ✏️ Редактировать
+                      </button>
+                      <button className="btn btn-sm btn-danger" onClick={() => handleDelete(entry.id)}>
+                        🗑 Удалить
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="graded-locked">🔒 Запись заблокирована после выставления оценки</p>
+                  )}
                 </>
               )}
             </div>

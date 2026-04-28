@@ -23,7 +23,7 @@ class LessonEntry(models.Model):
     # Оценка — ставит учитель
     grade = models.PositiveSmallIntegerField(
         blank=True, null=True,
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
         verbose_name='Оценка',
     )
     graded_by = models.ForeignKey(

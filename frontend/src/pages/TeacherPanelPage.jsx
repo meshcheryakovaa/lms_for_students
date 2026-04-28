@@ -4,8 +4,8 @@ import { getEntries, gradeEntry, getGroups } from '../api/client';
 /* ── Бейдж оценки ─────────────────────────────────────────── */
 function GradeBadge({ grade }) {
   if (grade == null) return <span className="badge badge-none">Нет оценки</span>;
-  const cls = grade >= 7 ? 'good' : grade >= 5 ? 'mid' : 'bad';
-  return <span className={`badge badge-${cls}`}>{grade}/10</span>;
+  const cls = grade >= 4 ? 'good' : grade >= 3 ? 'mid' : 'bad';
+  return <span className={`badge badge-${cls}`}>{grade}/5</span>;
 }
 
 /* ── Модалка выставления оценки ───────────────────────────── */
@@ -17,7 +17,7 @@ function GradeModal({ entry, onClose, onGraded }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const g = parseInt(value, 10);
-    if (isNaN(g) || g < 1 || g > 10) { setError('Введите число от 1 до 10'); return; }
+    if (isNaN(g) || g < 1 || g > 5) { setError('Введите число от 1 до 5'); return; }
     setSaving(true);
     try {
       await gradeEntry(entry.id, g);
@@ -40,8 +40,8 @@ function GradeModal({ entry, onClose, onGraded }) {
         </p>
         <p className="modal-comment">{entry.comment}</p>
         <form onSubmit={handleSubmit}>
-          <label>Оценка (1–10)
-            <input type="number" min={1} max={10} value={value}
+          <label>Оценка (1–5)
+            <input type="number" min={1} max={5} value={value}
               onChange={(e) => setValue(e.target.value)} autoFocus />
           </label>
           {error && <p className="error">{error}</p>}
@@ -116,8 +116,8 @@ function GroupJournal({ entries, onGradeClick }) {
                 }
                 const cls = entry.grade == null
                   ? 'grade-pending'
-                  : entry.grade >= 7 ? 'grade-good'
-                  : entry.grade >= 5 ? 'grade-mid'
+                  : entry.grade >= 4 ? 'grade-good'
+                  : entry.grade >= 3 ? 'grade-mid'
                   : 'grade-bad';
                 return (
                   <td

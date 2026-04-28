@@ -95,8 +95,8 @@ class GradeSerializer(serializers.ModelSerializer):
         fields = ['grade']
 
     def validate_grade(self, value):
-        if value is not None and not (1 <= value <= 10):
-            raise serializers.ValidationError('Оценка должна быть от 1 до 10.')
+        if value is not None and not (1 <= value <= 5):
+            raise serializers.ValidationError('Оценка должна быть от 1 до 5.')
         return value
 
     def update(self, instance, validated_data):

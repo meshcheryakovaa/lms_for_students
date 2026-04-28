@@ -18,9 +18,14 @@ class IsStudent(BasePermission):
 
 
 class IsOwnerOrTeacher(BasePermission):
-    """Студент — только свои записи. Преподаватель — любые."""
+    """Студент — только свои записи, и только пока нет оценки. Преподаватель — любые."""
 
     def has_object_permission(self, request, view, obj):
         if request.user.role == User.TEACHER:
             return True
-        return obj.student == request.user
+        if obj.student != request.user:
+            return False
+        # Студент не может редактировать/удалять запись если оценка уже выставлена
+        if obj.grade is not None:
+            return False
+        return True

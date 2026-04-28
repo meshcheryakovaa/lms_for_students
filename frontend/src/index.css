@@ -248,6 +248,12 @@ textarea { resize: vertical; }
 .grade-mid    { color: #744210; background: #feebc8; }
 .grade-bad    { color: #742a2a; background: #fed7d7; }
 
+/* ── Locked entry ─────────────────────────────────────── */
+.graded-locked {
+  font-size: .82rem; color: var(--muted);
+  margin-top: .5rem; display: flex; align-items: center; gap: .3rem;
+}
+
 /* ── Misc ─────────────────────────────────────────────── */
 .error { color: var(--danger); font-size: .85rem; }
 .spinner { text-align: center; padding: 3rem; color: var(--muted); }
