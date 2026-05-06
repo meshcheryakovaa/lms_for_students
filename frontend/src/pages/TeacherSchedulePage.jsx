@@ -5,7 +5,7 @@ const SHEET_ID = '1ghXeNIWkevIrNItElo1VMrz-PeYYXufb6GSLMV2BIlk';
 const SHEET_NAME = '*ПРЕПОДАВАТЕЛИ*';
 const RANGE = 'AB1:AB105';
 
-const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(SHEET_NAME)}&range=${RANGE}`;
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&sheet=${encodeURIComponent(SHEET_NAME).replace(/%2A/gi, '*')}&range=${RANGE}`;
 
 export default function TeacherSchedulePage() {
   const navigate = useNavigate();
