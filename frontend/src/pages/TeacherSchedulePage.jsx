@@ -94,7 +94,7 @@ export default function TeacherSchedulePage() {
             <thead>
               <tr>
                 <th style={{ width: 40, textAlign: 'center' }}>№</th>
-                <th style={{ width: 90 }}>A / B / C</th>
+                <th style={{ width: 110, textAlign: 'center' }}>A / B / C</th>
                 <th>AB</th>
               </tr>
             </thead>
