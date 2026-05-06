@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getEntries, gradeEntry, getGroups } from '../api/client';
 
 /* ── Бейдж оценки ─────────────────────────────────────────── */
@@ -141,6 +142,7 @@ function GroupJournal({ entries, onGradeClick }) {
 
 /* ── Главная страница ─────────────────────────────────────── */
 export default function TeacherPanelPage() {
+  const navigate = useNavigate();
   const [entries, setEntries] = useState([]);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -209,6 +211,12 @@ export default function TeacherPanelPage() {
           onClick={() => setMode('journal')}
         >
           📊 Журнал группы
+        </button>
+        <button
+          className="btn btn-outline"
+          onClick={() => navigate('/teacher/schedule')}
+        >
+          📅 Расписание
         </button>
       </div>
 

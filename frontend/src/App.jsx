@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import StudentJournalPage from './pages/StudentJournalPage';
 import TeacherPanelPage from './pages/TeacherPanelPage';
+import TeacherSchedulePage from './pages/TeacherSchedulePage';
 import ProfilePage from './pages/ProfilePage';
 
 function HomeRedirect() {
@@ -30,6 +31,9 @@ export default function App() {
             } />
             <Route path="/teacher" element={
               <PrivateRoute role="teacher"><TeacherPanelPage /></PrivateRoute>
+            } />
+            <Route path="/teacher/schedule" element={
+              <PrivateRoute role="teacher"><TeacherSchedulePage /></PrivateRoute>
             } />
             <Route path="/profile" element={
               <PrivateRoute><ProfilePage /></PrivateRoute>
