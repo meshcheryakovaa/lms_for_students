@@ -4,14 +4,12 @@ import { useNavigate } from 'react-router-dom';
 const CSV_URL =
   'https://docs.google.com/spreadsheets/d/1ghXeNIWkevIrNItElo1VMrz-PeYYXufb6GSLMV2BIlk/export?format=csv&gid=1593181666&range=A1:AB105';
 
-// Строки, которые нужно скрыть (1-indexed)
 const REMOVE_ROWS = new Set([
   1,
   45, 46, 47, 48, 49, 50, 51, 52, 53,
   98, 99, 100, 101, 102, 103, 104, 105,
 ]);
 
-// Строки-заголовки дней недели
 const DAY_ROWS = {
   3: 'Понедельник', 10: 'Вторник', 17: 'Среда',
   24: 'Четверг',   31: 'Пятница', 38: 'Суббота',
@@ -19,21 +17,42 @@ const DAY_ROWS = {
   77: 'Четверг',   84: 'Пятница', 91: 'Суббота',
 };
 
-// Строки-разделители семестров (значение берётся из столбца F той же строки)
 const SEMESTER_ROWS = new Set([2, 54]);
 
-function parseCSVLine(line) {
-  const result = [];
-  let inQuote = false;
+// Полноценный CSV-парсер: корректно обрабатывает переносы строк внутри кавычек
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
   let cell = '';
-  for (const ch of line) {
-    if (ch === '"') { inQuote = !inQuote; }
-    else if (ch === ',' && !inQuote) { result.push(cell); cell = ''; }
-    else { cell += ch; }
+  let inQuote = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuote) {
+      if (ch === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (ch === '"') { inQuote = false; }
+      else { cell += ch; }
+    } else {
+      if (ch === '"') { inQuote = true; }
+      else if (ch === ',') { row.push(cell); cell = ''; }
+      else if (ch === '\r') { /* skip */ }
+      else if (ch === '\n') { row.push(cell); cell = ''; rows.push(row); row = []; }
+      else { cell += ch; }
+    }
   }
-  result.push(cell);
-  return result;
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
 }
+
+const rotatedCell = {
+  writingMode: 'vertical-lr',
+  transform: 'rotate(180deg)',
+  textAlign: 'center',
+  whiteSpace: 'nowrap',
+  padding: '6px 4px',
+  fontSize: '0.78rem',
+  width: 26,
+};
 
 export default function TeacherSchedulePage() {
   const navigate = useNavigate();
@@ -48,9 +67,9 @@ export default function TeacherSchedulePage() {
         return res.text();
       })
       .then((text) => {
-        const parsed = text.split('\n').map((line, idx) => ({
-          rowNum: idx + 1,          // номер строки в таблице (1-based)
-          cells: parseCSVLine(line.trimEnd()),
+        const parsed = parseCSV(text).map((cells, idx) => ({
+          rowNum: idx + 1,
+          cells,
         }));
         setRows(parsed);
       })
@@ -75,15 +94,18 @@ export default function TeacherSchedulePage() {
       )}
 
       {!loading && !error && (
-        <div className="teacher-table-wrap">
-          <table className="teacher-table" style={{ minWidth: 640 }}>
+        <div style={{ overflowX: 'hidden' }}>
+          <table
+            className="teacher-table"
+            style={{ tableLayout: 'fixed', width: '100%' }}
+          >
             <thead>
               <tr>
-                <th style={{ width: 48, textAlign: 'center' }}>№</th>
-                <th>A</th>
-                <th>B</th>
-                <th>C</th>
-                <th>AB</th>
+                <th style={{ width: 40, textAlign: 'center' }}>№</th>
+                <th style={{ ...rotatedCell, verticalAlign: 'bottom' }}>A</th>
+                <th style={{ ...rotatedCell, verticalAlign: 'bottom' }}>B</th>
+                <th style={{ ...rotatedCell, verticalAlign: 'bottom' }}>C</th>
+                <th style={{ wordBreak: 'break-word' }}>AB</th>
               </tr>
             </thead>
             <tbody>
@@ -94,7 +116,6 @@ export default function TeacherSchedulePage() {
                 const colF  = cells[5]  ?? '';
                 const colAB = cells[27] ?? '';
 
-                // Строки 2 и 54 — заголовок семестра/недели из столбца F
                 if (SEMESTER_ROWS.has(rowNum)) {
                   return (
                     <tr key={rowNum} style={{ background: '#ebf4ff' }}>
@@ -106,7 +127,6 @@ export default function TeacherSchedulePage() {
                   );
                 }
 
-                // Строки дней недели
                 if (DAY_ROWS[rowNum]) {
                   return (
                     <tr key={rowNum} style={{ background: '#f0f4f8' }}>
@@ -118,14 +138,13 @@ export default function TeacherSchedulePage() {
                   );
                 }
 
-                // Обычная строка
                 return (
                   <tr key={rowNum}>
-                    <td style={{ color: 'var(--muted)', textAlign: 'center' }}>{rowNum}</td>
-                    <td>{colA}</td>
-                    <td>{colB}</td>
-                    <td>{colC}</td>
-                    <td>{colAB}</td>
+                    <td style={{ color: 'var(--muted)', textAlign: 'center', width: 40 }}>{rowNum}</td>
+                    <td style={rotatedCell}>{colA}</td>
+                    <td style={rotatedCell}>{colB}</td>
+                    <td style={rotatedCell}>{colC}</td>
+                    <td style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{colAB}</td>
                   </tr>
                 );
               })}
