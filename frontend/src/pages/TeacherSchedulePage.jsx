@@ -7,6 +7,7 @@ const CSV_URL =
 const REMOVE_ROWS = new Set([
   1,
   45, 46, 47, 48, 49, 50, 51, 52, 53,
+  55,
   98, 99, 100, 101, 102, 103, 104, 105,
 ]);
 
@@ -44,15 +45,6 @@ function parseCSV(text) {
   return rows;
 }
 
-const rotatedCell = {
-  writingMode: 'vertical-lr',
-  transform: 'rotate(180deg)',
-  textAlign: 'center',
-  whiteSpace: 'nowrap',
-  padding: '6px 4px',
-  fontSize: '0.78rem',
-  width: 26,
-};
 
 export default function TeacherSchedulePage() {
   const navigate = useNavigate();
@@ -102,10 +94,8 @@ export default function TeacherSchedulePage() {
             <thead>
               <tr>
                 <th style={{ width: 40, textAlign: 'center' }}>№</th>
-                <th style={{ ...rotatedCell, verticalAlign: 'bottom' }}>A</th>
-                <th style={{ ...rotatedCell, verticalAlign: 'bottom' }}>B</th>
-                <th style={{ ...rotatedCell, verticalAlign: 'bottom' }}>C</th>
-                <th style={{ wordBreak: 'break-word' }}>AB</th>
+                <th style={{ width: 90 }}>A / B / C</th>
+                <th>AB</th>
               </tr>
             </thead>
             <tbody>
@@ -120,7 +110,7 @@ export default function TeacherSchedulePage() {
                   return (
                     <tr key={rowNum} style={{ background: '#ebf4ff' }}>
                       <td style={{ color: 'var(--muted)', textAlign: 'center' }}>{rowNum}</td>
-                      <td colSpan={4} style={{ fontWeight: 700, color: 'var(--primary)' }}>
+                      <td colSpan={2} style={{ fontWeight: 700, color: 'var(--primary)' }}>
                         {colF}
                       </td>
                     </tr>
@@ -131,19 +121,19 @@ export default function TeacherSchedulePage() {
                   return (
                     <tr key={rowNum} style={{ background: '#f0f4f8' }}>
                       <td style={{ color: 'var(--muted)', textAlign: 'center' }}>{rowNum}</td>
-                      <td colSpan={4} style={{ fontWeight: 600 }}>
+                      <td colSpan={2} style={{ fontWeight: 600 }}>
                         {DAY_ROWS[rowNum]}
                       </td>
                     </tr>
                   );
                 }
 
+                const abc = [colA, colB, colC].filter(Boolean).join('\n');
+
                 return (
                   <tr key={rowNum}>
-                    <td style={{ color: 'var(--muted)', textAlign: 'center', width: 40 }}>{rowNum}</td>
-                    <td style={rotatedCell}>{colA}</td>
-                    <td style={rotatedCell}>{colB}</td>
-                    <td style={rotatedCell}>{colC}</td>
+                    <td style={{ color: 'var(--muted)', textAlign: 'center' }}>{rowNum}</td>
+                    <td style={{ whiteSpace: 'pre-wrap', fontSize: '0.82rem', verticalAlign: 'top' }}>{abc}</td>
                     <td style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{colAB}</td>
                   </tr>
                 );
