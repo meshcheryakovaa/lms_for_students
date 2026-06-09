@@ -43,7 +43,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd /home/meshcheryakov/dev/lms_for_students
+            cd /home/yc-user/lms_for_students
             git pull origin main
             cd frontend && npm ci && npm run build && cd ..
             cd infra
